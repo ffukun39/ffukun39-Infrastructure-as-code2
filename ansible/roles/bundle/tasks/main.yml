@@ -1,0 +1,8 @@
+---
+- name: 'bundle install'
+  bundler:
+    state: present
+    executable: /usr/local/rbenv/shims/bundle
+    chdir: '/home/{{ app_user }}/{{ project_name }}'
+    extra_args: '--path vendor/bundle -j4'
+    user_install: yes

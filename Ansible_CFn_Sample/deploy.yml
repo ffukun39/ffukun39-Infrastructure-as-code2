@@ -1,0 +1,10 @@
+---
+- hosts: server
+  become: yes
+  become_user: '{{ app_user }}'
+  roles:
+    - gitpull
+    - bundle
+    - nginx
+    - logrotate
+    - capistrano

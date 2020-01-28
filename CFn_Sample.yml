@@ -1,0 +1,451 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  zonefukuchankamocom:
+    Type: 'AWS::Route53::HostedZone'
+    Properties:
+      Name: fukuchankamo.com.
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 2d07edba-8550-47e3-847f-a2b5a8e8ff51
+  dnsfukuchankamocom:
+    Type: 'AWS::Route53::RecordSetGroup'
+    Properties:
+      HostedZoneId: !Ref zonefukuchankamocom
+      RecordSets:
+        - Name: fukuchankamo.com.
+          Type: A
+          AliasTarget:
+            HostedZoneId: Z14GRHDCWA56QT
+            DNSName: >-
+              dualstack.sample-app-elb-361919673.ap-northeast-1.elb.amazonaws.com
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 2226ac50-81be-4f80-8760-b99ca9ea89c3
+  vpc02053ca0d1c28a292:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      InstanceTenancy: default
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'false'
+      Tags:
+        - Key: Name
+          Value: VPC_for_Fukuoka
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b2008b05-a6ea-47b6-96e7-20bd41e70e5c
+  subnet0fffc40af8807fd48:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: ap-northeast-1a
+      VpcId: !Ref vpc02053ca0d1c28a292
+      Tags:
+        - Key: Name
+          Value: Fukuoka_public_subnet
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 13f8bb03-cc85-4655-8589-ddd800fd8292
+  subnet07491d36e85810015:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.10.0/24
+      AvailabilityZone: ap-northeast-1c
+      VpcId: !Ref vpc02053ca0d1c28a292
+      Tags:
+        - Key: Name
+          Value: Fukuoka_public_subnet1c
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 1851cdb3-7d32-40b5-935d-ff72daf2427f
+  subnet0de97e328a6b0235e:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.20.0/24
+      AvailabilityZone: ap-northeast-1c
+      VpcId: !Ref vpc02053ca0d1c28a292
+      Tags:
+        - Key: Name
+          Value: Fukuoka_private_subnet1c
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 3d33e050-4d23-4aa9-b094-6d4a656292a0
+  igw0e4aabf56c8c5af37:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: Gateway_for_Fukuoka
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 7134aa9d-bb24-4140-be22-c6332b30de06
+  doptb1d7f6d6:
+    Type: 'AWS::EC2::DHCPOptions'
+    Properties:
+      DomainName: ap-northeast-1.compute.internal
+      DomainNameServers:
+        - AmazonProvidedDNS
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 4f45ef21-6aa6-4f17-bed7-b78e49955796
+  acl07488194adf8015e8:
+    Type: 'AWS::EC2::NetworkAcl'
+    Properties:
+      VpcId: !Ref vpc02053ca0d1c28a292
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 61e4b1d2-bb83-467e-87f3-95a2c2a7a533
+  rtb0ac0a6d348ab2ee03:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref vpc02053ca0d1c28a292
+      Tags:
+        - Key: Name
+          Value: Table_for_Fukoka
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 305e3e4b-800f-4e78-b70c-e2c3a216c248
+  rtb0f029b3c2c4d14251:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref vpc02053ca0d1c28a292
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 567d490e-1654-4792-8928-65ca0fc005bf
+  eip1817760226:
+    Type: 'AWS::EC2::EIP'
+    DependsOn:
+      - gw1
+    Properties:
+      Domain: vpc
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 70e30d1f-c2b0-4954-9373-70235e5bcd42
+  eni0eb9e13530641dd86:
+    Type: 'AWS::EC2::NetworkInterface'
+    Properties:
+      Description: RDSNetworkInterface
+      SourceDestCheck: 'true'
+      SubnetId: !Ref subnet0de97e328a6b0235e
+      PrivateIpAddresses:
+        - PrivateIpAddress: 10.0.20.42
+          Primary: 'true'
+      GroupSet:
+        - !Ref sgFukuokaSecurityGroupdb
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 361eff67-33af-4cfd-b995-9ce1c559f9a4
+  instancei04aed328e3af06dd0:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      IamInstanceProfile: 'arn:aws:iam::462633883390:instance-profile/ecsrole'
+      ImageId: ami-068a6cefc24c301d2
+      InstanceType: t2.micro
+      KeyName: sample-app-aws-deploy
+      Monitoring: 'false'
+      Tags:
+        - Key: Name
+          Value: sample-app
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          Description: Primary network interface
+          DeviceIndex: 0
+          SubnetId: !Ref subnet0fffc40af8807fd48
+          PrivateIpAddresses:
+            - PrivateIpAddress: 10.0.0.129
+              Primary: 'true'
+          GroupSet:
+            - !Ref sgFukuokaSecurityGroup
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 7d161b51-81f0-4fd8-ac13-364c81be8ead
+  rdssampleapppg:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      AllocatedStorage: '20'
+      AllowMajorVersionUpgrade: 'false'
+      AutoMinorVersionUpgrade: 'true'
+      DBInstanceClass: db.t2.micro
+      Port: '5432'
+      StorageType: gp2
+      BackupRetentionPeriod: '1'
+      MasterUsername: admin_master
+      MasterUserPassword: MyPassword
+      PreferredBackupWindow: '17:06-17:36'
+      PreferredMaintenanceWindow: 'fri:19:38-fri:20:08'
+      DBName: MyDatabase
+      Engine: postgres
+      EngineVersion: '11.5'
+      LicenseModel: postgresql-license
+      DBSubnetGroupName: !Ref dbsubnetdefaultvpc02053ca0d1c28a292
+      VPCSecurityGroups:
+        - !Ref sgFukuokaSecurityGroupdb
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 8ad8b254-460c-44cf-a89e-4e25b5f5edc8
+  s3cftemplates1rd6ps6egnfb5apnortheast1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Suspended
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 149b69c2-9b03-4676-adf9-29be6bbd5e37
+  dbsubnetdefaultvpc02053ca0d1c28a292:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: Created from the RDS Management Console
+      SubnetIds:
+        - !Ref subnet0de97e328a6b0235e
+        - !Ref subnet0fffc40af8807fd48
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 91950f9e-6b25-4b32-8955-0f36c7b9ccad
+  sgFukuokaasampleapp:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Fukuoka-asample-app
+      VpcId: !Ref vpc02053ca0d1c28a292
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: bf0b1789-935f-44fd-bdf1-aa51a47386f3
+  sgFukuokaSecurityGroupdb:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Fukuoka-SecurityGroup-db
+      VpcId: !Ref vpc02053ca0d1c28a292
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 9154948f-9428-4223-b9c3-22657ca737f0
+  sgFukuokaSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Fukuoka-SecurityGroup
+      VpcId: !Ref vpc02053ca0d1c28a292
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 65bdd70b-bcca-444c-ae04-a8d248cc11d2
+  acl1:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: 'true'
+      Protocol: '-1'
+      RuleAction: allow
+      RuleNumber: '100'
+      NetworkAclId: !Ref acl07488194adf8015e8
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b6379917-994f-4f5f-9217-9fa66fa257d3
+  acl2:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Protocol: '-1'
+      RuleAction: allow
+      RuleNumber: '100'
+      NetworkAclId: !Ref acl07488194adf8015e8
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: a6b7692a-b8a7-4195-8f71-09b1d5de93e2
+  subnetacl1:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      NetworkAclId: !Ref acl07488194adf8015e8
+      SubnetId: !Ref subnet07491d36e85810015
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: ff36a0d5-7fbd-4d10-b9d9-e77ea83d9dc2
+  subnetacl2:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      NetworkAclId: !Ref acl07488194adf8015e8
+      SubnetId: !Ref subnet0fffc40af8807fd48
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 2899f219-2cf0-411a-8a0b-a3ca7b24db0a
+  subnetacl3:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      NetworkAclId: !Ref acl07488194adf8015e8
+      SubnetId: !Ref subnet0de97e328a6b0235e
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b9032a99-b5df-413e-9a19-e74e00ca2f2b
+  gw1:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref vpc02053ca0d1c28a292
+      InternetGatewayId: !Ref igw0e4aabf56c8c5af37
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: ef46c44f-9ad2-45bc-9e66-3849994d38bd
+  subnetroute1:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref rtb0ac0a6d348ab2ee03
+      SubnetId: !Ref subnet0de97e328a6b0235e
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 17905e86-22b2-4f57-b59f-3c45c3d1bb57
+  subnetroute2:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref rtb0ac0a6d348ab2ee03
+      SubnetId: !Ref subnet07491d36e85810015
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 037e1980-86ca-4a09-ae5f-047232b8f962
+  subnetroute3:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref rtb0ac0a6d348ab2ee03
+      SubnetId: !Ref subnet0fffc40af8807fd48
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 203613d6-5a42-4f55-aa88-72d83f147112
+  route1:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref rtb0ac0a6d348ab2ee03
+      GatewayId: !Ref igw0e4aabf56c8c5af37
+    DependsOn: gw1
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 5915d2c3-34ad-4f80-88fc-594290aa2999
+  dchpassoc1:
+    Type: 'AWS::EC2::VPCDHCPOptionsAssociation'
+    Properties:
+      VpcId: !Ref vpc02053ca0d1c28a292
+      DhcpOptionsId: !Ref doptb1d7f6d6
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 0134d62f-4673-4832-95f9-67a531a3767c
+  assoc1:
+    Type: 'AWS::EC2::EIPAssociation'
+    Properties:
+      AllocationId: !GetAtt
+        - eip1817760226
+        - AllocationId
+      InstanceId: !Ref instancei04aed328e3af06dd0
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 69936e25-c43b-4dea-86c6-0bb377fa2de8
+  ingress1:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref sgFukuokaasampleapp
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      SourceSecurityGroupId: !Ref sgFukuokaasampleapp
+      SourceSecurityGroupOwnerId: '462633883390'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: bc76913a-0a0b-47db-9264-6ba632ce5988
+  ingress2:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref sgFukuokaasampleapp
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  ingress3:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref sgFukuokaSecurityGroupdb
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      SourceSecurityGroupId: !Ref sgFukuokaasampleapp
+      SourceSecurityGroupOwnerId: '462633883390'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: dfa8cf52-7edb-48da-9354-bc25a1c02a2b
+  ingress4:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref sgFukuokaSecurityGroupdb
+      IpProtocol: tcp
+      FromPort: '5432'
+      ToPort: '5432'
+      SourceSecurityGroupId: !Ref sgFukuokaSecurityGroupdb
+      SourceSecurityGroupOwnerId: '462633883390'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: aaa45505-942e-4bf9-8d18-d43669c66d32
+  ingress5:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref sgFukuokaSecurityGroupdb
+      IpProtocol: tcp
+      FromPort: '5432'
+      ToPort: '5432'
+      SourceSecurityGroupId: !Ref sgFukuokaSecurityGroup
+      SourceSecurityGroupOwnerId: '462633883390'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: c39fd03a-e5d5-4d86-92da-d292c48270d7
+  ingress6:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref sgFukuokaSecurityGroup
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      SourceSecurityGroupId: !Ref sgFukuokaasampleapp
+      SourceSecurityGroupOwnerId: '462633883390'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 06b27e47-5708-4998-a34d-0e4f88bb1edd
+  ingress7:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref sgFukuokaSecurityGroup
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  ingress8:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref sgFukuokaSecurityGroup
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      SourceSecurityGroupId: !Ref sgFukuokaSecurityGroup
+      SourceSecurityGroupOwnerId: '462633883390'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 471e88d7-80fb-4c96-991c-554aa3eb732c
+  ingress9:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref sgFukuokaSecurityGroup
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 160.86.152.36/32
+  egress1:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      GroupId: !Ref sgFukuokaasampleapp
+      IpProtocol: '-1'
+      CidrIp: 0.0.0.0/0
+  egress2:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      GroupId: !Ref sgFukuokaSecurityGroupdb
+      IpProtocol: '-1'
+      CidrIp: 0.0.0.0/0
+  egress3:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      GroupId: !Ref sgFukuokaSecurityGroup
+      IpProtocol: '-1'
+      CidrIp: 0.0.0.0/0

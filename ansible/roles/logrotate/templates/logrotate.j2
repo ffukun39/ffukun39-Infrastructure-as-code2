@@ -1,0 +1,17 @@
+/opt/project_name/current/log/*.log {
+  daily
+  missingok
+  rotate 30
+  dateext
+  su app_user app_user
+
+  # 圧縮設定 (圧縮は次回のローテートまで遅らせる)
+  compress
+  delaycompress
+
+  # puma masterプロセスに、USR1シグナルを送る
+  lastaction
+    pid=/opt/project_name/current/tmp/pids/puma.pid
+    test -s $pid && kill -USR1 "$(cat $pid)"
+  endscript
+}

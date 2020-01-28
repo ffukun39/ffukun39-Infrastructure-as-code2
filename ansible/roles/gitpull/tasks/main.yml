@@ -1,0 +1,7 @@
+---
+- name: 'project sourcecode git pull'
+  git:
+    repo: '{{ git_url }}'
+    dest: '/home/{{ app_user }}/{{ project_name }}'
+    version: '{{ git_branch }}'
+    accept_hostkey: yes

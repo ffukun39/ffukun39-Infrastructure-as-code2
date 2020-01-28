@@ -1,0 +1,53 @@
+user  nginx;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+
+    gzip                    on;
+    gzip_min_length         1024;
+    gzip_comp_level         2;
+    gzip_proxied            any;
+    gzip_types              text/plain text/css application/javascript
+                            text/xml application/atom+xml application/xml+rss
+                            application/json text/json text/javascript+json;
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    proxy_hide_header X-Content-Type-Options;
+    upstream puma {
+        # nginxとpumaの連携
+        server unix:/opt/project_name/current/tmp/sockets/puma.sock;
+    }
+
+    server {
+        listen 80;
+        server_tokens off;
+
+        server_name localhost;
+        root /opt/project_name/current/public;
+        access_log /var/log/nginx/heroku_access.log;
+        error_log /var/log/nginx/heroku_error.log;
+        client_max_body_size 100m;
+        error_page 500 502 503 504 /500.html;
+	    try_files $uri/index.html $uri @puma;
+
+        location @puma {
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header Host $http_host;
+          proxy_pass http://puma;
+        }
+    }
+}

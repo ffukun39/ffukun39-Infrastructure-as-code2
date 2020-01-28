@@ -1,0 +1,7 @@
+---
+ruby_version: 2.6.3
+bundler_version: 2.0.2
+git_url: git@github.com:ffukun39/sample-app.git
+app_user: sample-app
+project_name: sample
+deploy_directory: /opt/{{ teraa_form_sample }}

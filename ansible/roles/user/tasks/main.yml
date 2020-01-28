@@ -1,0 +1,30 @@
+---
+- name: '{{ app_user }} ユーザーを作成する'
+  user:
+    name: '{{ app_user }}'
+    groups: 'wheel'
+    shell: '/bin/bash'
+
+- name: '~/.ssh ディレクトリを作成する'
+  file:
+    dest: '/home/{{ app_user }}/.ssh'
+    state: directory
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0700
+
+- name: '~/.ssh/authorized_keys を作成する'
+  template:
+    src: authorized_keys.j2
+    dest: '/home/{{ app_user }}/.ssh/authorized_keys'
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0644
+
+- name: '~/.ssh/id_rsa を作成する'
+  template:
+    src: id_rsa.j2
+    dest: '/home/{{ app_user }}/.ssh/id_rsa'
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0600

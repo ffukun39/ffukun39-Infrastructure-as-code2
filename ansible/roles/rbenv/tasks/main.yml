@@ -1,0 +1,58 @@
+---
+- name: 'rbenvインストール'
+  git:
+    repo: https://github.com/sstephenson/rbenv.git
+    dest: /usr/local/rbenv
+    force: yes
+
+- name: 'rbenvのshファイルを配置'
+  template:
+    src: rbenv_system.sh.j2
+    dest: /etc/profile.d/rbenv.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: 'ruby-buildインストール'
+  git:
+    repo: https://github.com/sstephenson/ruby-build.git
+    dest: /usr/local/rbenv/plugins/ruby-build
+    force: yes
+
+- name: 'グループを作成'
+  group:
+    name: "{{ rbenv_group }}"
+
+- name: 'check exists group'
+  shell: getent group {{ rbenv_group }}
+  register: group_exists
+  ignore_errors: yes
+  check_mode: no
+
+- name: 'ユーザーをグループに所属'
+  user:
+    name: "{{ ansible_user }}"
+    groups: "{{ rbenv_group }}"
+  when: 'group_exists is success'
+
+- name: 'rbenvディレクトリの所有グループを設定'
+  file:
+    path: /usr/local/rbenv
+    owner: root
+    group: "{{ rbenv_group }}"
+    state: directory
+    mode: 0755
+    recurse: yes
+
+- name: 'rubyインストール'
+  shell: bash -lc "rbenv install --skip-existing {{ ruby_version }}"
+
+- name: 'globalセット'
+  shell: bash -lc "rbenv global {{ ruby_version }} && rbenv rehash"
+
+- name: 'bundlerインストール'
+  gem:
+    name: bundler
+    user_install: no
+    version: "{{ bundler_version }}"
+    executable: /usr/local/rbenv/shims/gem

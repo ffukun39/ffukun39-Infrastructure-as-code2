@@ -1,0 +1,4 @@
+- name: git_test
+  hosts: server
+  tasks:
+  - git: repo=git@github.com:ffukun39/sample-app.git dest=/home/ec2-user/test_git

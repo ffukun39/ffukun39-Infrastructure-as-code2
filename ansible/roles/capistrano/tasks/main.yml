@@ -1,0 +1,48 @@
+---
+- name: '{{ deploy_directory }} デプロイディレクトリを作成'
+  file:
+    path: '{{ deploy_directory }}'
+    state: directory
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0755
+  become_user: root
+
+- name: '{{ deploy_directory }} デプロイディレクトリ配下にsharedディレクトリを作成'
+  file:
+    path: '{{ deploy_directory }}/shared'
+    state: directory
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0755
+  become_user: root
+
+- name: '{{ deploy_directory }} sharedディレクトリ配下にconfigディレクトリを作成'
+  file:
+    path: '{{ deploy_directory }}/shared/config'
+    state: directory
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0755
+  become_user: root
+
+- name: 'railsのmaster_keyを設置する'
+  template:
+    src: master_key.j2
+    dest: '{{ deploy_directory }}/shared/config/master.key'
+    owner: '{{ app_user }}'
+    group: '{{ app_user }}'
+    mode: 0644
+
+- name: 'cap deploy'
+  shell: bash -lc "BRANCH={{ git_branch }} bundle exec cap {{ cap_env }} deploy"
+  args:
+    chdir: '/home/{{ app_user }}/{{ project_name }}'
+  register: cap_exec_result
+  ignore_errors: yes
+
+- name: 'cap failback'
+  shell: bash -lc "bundle exec cap {{ cap_env }} deploy:rollback"
+  args:
+    chdir: '/home/{{ app_user }}/{{ project_name }}'
+  when: cap_exec_result.rc == 1

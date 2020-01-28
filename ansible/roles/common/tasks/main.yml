@@ -1,0 +1,22 @@
+---
+- name: 'yum update'
+  yum:
+    name: '*'
+    state: latest
+
+- name: 'Install packages'
+  yum:
+    name: "{{ item }}"
+  with_items:
+    - git
+    - gcc
+    - openssl-devel
+    - libyaml-devel
+    - readline-devel
+    - zlib-devel
+    - libffi-devel
+    - mysql-devel
+    - gcc-c++
+
+- name: 'enable amazon-linux-extras nginx'
+  shell: 'amazon-linux-extras enable nginx1.12'

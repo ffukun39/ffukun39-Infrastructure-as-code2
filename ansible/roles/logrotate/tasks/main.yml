@@ -1,0 +1,6 @@
+---
+- name: '/etc/logrotate.d/ を配置する'
+  template:
+    src: logrotate.j2
+    dest: '/etc/logrotate.d/{{ project_name }}'
+  become_user: root
