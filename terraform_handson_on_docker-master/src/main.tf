@@ -127,7 +127,7 @@ resource "aws_db_subnet_group" "main" {
   description = "It is a DB subnet group on tf_vpc."
   subnet_ids = [aws_subnet.of_praivate_1c.id,aws_subnet.of_public_1a.id,]
   tags = {
-    Name = "tf_dbsubnet"
+    Name = "tff_dbsubnet"
   }
 }
 

@@ -1,6 +1,6 @@
 ruby_version: 2.5.3
 bundler_version: 2.0.2
 git_url: git@github.com:ffukun39/sample-app.git
-app_user: fukuokayuki
-project_name: terraform_sample
+app_user: fukuokayuuki
+project_name: terraform
 deploy_directory: /opt/{{ terraform_sample }}

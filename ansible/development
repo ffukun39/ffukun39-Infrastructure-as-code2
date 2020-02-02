@@ -1,5 +1,5 @@
 [server]
-54.64.55.141
+3.114.137.215
 
 [server:vars]
 ansible_user=ec2-user
